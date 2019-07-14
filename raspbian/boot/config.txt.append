@@ -1,0 +1,5 @@
+# https://wiki.52pi.com/index.php/7-Inch-1024x600_Capacitive_Touch_Screen_(Extend_Two_USB_HOST_Port)_SKU:_EP-0085
+hdmi_group=2 
+hdmi_mode=87 
+hdmi_cvt 1024 600 60 3 0 0 0 
+hdmi_force_hotplug=1
