@@ -49,7 +49,9 @@ def parseTtyCallBack(mqtt, lines):
             # bytes("%s\n" % data, 'utf-8')
             status = bytes(remapStatusToHa(line[6]), 'utf-8')
             logging.debug("parseTtyCallBack:light: %s, status: %s" % ( lightId, status ))
-            mqtt.publish("light/%s/status" % lightId, status)
+            if mqtt is not None:
+                mqtt.publish("light/%s/status" % lightId, status)
+
         # if line == "led":
         #     mqtt.publish("light/1/status","OFF")
         # if line == "led:0:1":
@@ -134,14 +136,16 @@ if __name__ == "__main__":
         sys.exit(1)
 
     if args.mqttHost is not None:
-        mqtt = mqttInit(args)
-        mqtt.loop_start()
+        mqttClient = mqttInit(args)
+        mqttClient.loop_start()
+    else:
+         mqttClient = None
 
     tty = SlothyTty(args)
 
     tty.connect()
     tty.callBack = parseTtyCallBack
-    tty.mqtt = mqtt
+    tty.mqtt = mqttClient
     tty.readData()
     # thread.start_new_thread( readLoop, () )
 
