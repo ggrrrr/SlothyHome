@@ -64,23 +64,25 @@ class SlothyTty():
             self.LOG.error("readData: serial not connected!")
             return
         self.LOG.debug("readData...")
-        done = 1
         readLines = []
         if self.serial.inWaiting() > 0:
+            done = 1
+            line = ""
             while done:
                 while self.serial.inWaiting() > 0:
                     bytesIn = self.serial.readline()
-                    self.LOG.debug("bytesIn: %s" % bytesIn)
+                    self.LOG.debug("GOT.BYTES:%s" % bytesIn)
                     bytesInUtf = bytesIn.decode("utf-8")
-                    # bytesInUtf = "%s" % bytesIn
-                    line ="%s" % (bytesInUtf.rstrip())
-                    self.LOG.debug ( "readData.line<%s>" %  (line))
-                    if line == ".":
-                        done = 0
-                        self.LOG.debug("gote.end.")
-                    else:
+                    line = "%s%s" % (line, bytesInUtf.rstrip())
+                    if '\n' in bytesInUtf:
                         readLines.append(line)
-
+                        self.LOG.info("GOT.NL:%s" % line)
+                        line = ""
+                    
+                    if ";" in bytesInUtf.rstrip():
+                        done = 0
+                        self.LOG.info("GOT.END.")
+        
         self.ttyFree = 1
         if len(readLines) > 0:
             self.LOG.info("readData.data:%s" % ( readLines))

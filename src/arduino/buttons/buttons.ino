@@ -2,11 +2,8 @@
 
 // SHIFT REGISTER 74HC165
 #define SHIFT_CHIPS 2
-#define BUTTON_COUNT SHIFT_CHIPS * 8
 #define SHIFT_PULSE_WIDTH_USEC   5
-#define POLL_DELAY_MSEC   1
-
-//#define BYTES_VAL_T unsigned int
+#define SHIFT_POLL_DELAY_MSEC   1
 
 #define SHIFT_PLOAD_P 8  // Connect Pin 8 to SH/!LD (shift or active low load) - Pin 1 (!PL) of 74HC165
 #define SHIFT_CE_P    9  // Connect Pin 9 to !CE (clock enable, active low) - Pin 15 (!CE) of 74HC165
@@ -18,10 +15,14 @@ uint32_t oldPinValues;
 
 const String COMPILE_DATE = __DATE__ " " __TIME__;  //compile date that is used for a unique identifier
 
-const int     LED_COUNT = 16;
-const int16_t DEBOUNCE_DELAY = 50;
-
-const uint8_t ledPins[LED_COUNT] = {53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38};
+//FIXME make it eeprom
+const int     BUTTON_COUNT = SHIFT_CHIPS * 8;
+const int     LED_COUNT = 8 * 3;
+const uint8_t ledPins[LED_COUNT] = 
+    {53,52,51,50,49,48,47,46
+    ,45,44,43,42,41,40,39,38
+    ,37,36,35,34,33,32,31,30
+    };
 
 unsigned long ledGroupMap[LED_COUNT];
 int ledGroupState[LED_COUNT];
@@ -82,7 +83,7 @@ uint32_t read_shift_regs()
 
 // Serial send done.
 void sendDone() {
-  Serial.println(".");
+  Serial.println(";");
 }
 
 void heartBeatResponse() {
@@ -119,22 +120,12 @@ void sendInfoEEPROM() {
 
 
 void writeDefaultEEPROM(int p_address) {
-  Serial.println("i.eeprom.defaut.");
-
+  Serial.println("i:eeprom:defaut:");
   for (int i = 0; i < LED_COUNT; i++) {
     uint32_t ledMap =  (uint32_t)1 << i;
     eepromWriteGroupMap(0, i, ledMap);
     p_address ++;
   }
-
-//  uint32_t a0 =  (uint32_t)1 << 11;
-//  uint32_t a1 =  (uint32_t)1 << 12;
-//  uint32_t a2 =  (uint32_t)1 << 13;
-//  uint32_t a3 =  (uint32_t)1 << 14;
-//  uint32_t a4 =  (uint32_t)1 << 15;
-//  uint32_t aa = a0 | a1 | a2 | a3 | a4;
-//  ledGroupMap[1] = aa;
-//  eepromWriteGroupMap(0, 1, aa);
 }
 
 void setLedGroupMap(int bIdx, uint32_t ledIdx) {
@@ -147,7 +138,7 @@ void eepromWriteGroupMap(int p_address, int gIdx, uint32_t ledMap) {
   uint8_t ledMap1 = ledMap >> 8;
   uint8_t ledMap2 = ledMap >> (8 * 2);
   uint8_t ledMap3 = ledMap >> (8 * 3);
-  Serial.print("i.eeprom.write:");
+  Serial.print("i:eeprom:write:");
   Serial.print(add);
   Serial.print(":");
   Serial.print(gIdx);
@@ -169,7 +160,7 @@ void readEEPROM(int p_address) {
     uint32_t ledMap2 = EEPROM.read(add+2);
     uint32_t ledMap3 = EEPROM.read(add+3);
     uint32_t ledMap = ledMap0 | (ledMap1 << 8);
-    Serial.print("read:eeprom:");
+    Serial.print("i:eeprom:");
     Serial.print(add);
     Serial.print(":");
     Serial.print(i);
@@ -284,11 +275,6 @@ void writeEEPROM(String cmd) {
   String valStr = cmd.substring(5);
   int idx = idxStr.toInt();
   uint32_t tt = strtoul(valStr.c_str(), 0, 2);
-  Serial.println(idx);
-  Serial.println(typeStr);
-  Serial.println(valStr );
-  Serial.println(tt);
-  
   eepromWriteGroupMap(0, idx, tt);
 }
 
@@ -304,10 +290,10 @@ void processRead(String cmd) {
       sendCompileDate();
       break;
     case 'b':
-      Serial.println("button.TODO");
+      Serial.println("button:TODO");
       break;
     case 'g':
-      Serial.println("group.TODO");
+      Serial.println("group:TODO");
       break;
     default:
       Serial.println("ERR");
@@ -324,7 +310,7 @@ void processWrite(String cmd) {
       writeEEPROM(cmd);
       break;
     case 'g':
-      Serial.println("group.TODO");
+      Serial.println("group:TODO");
       break;
     default:
       Serial.println("ERR W");
@@ -451,7 +437,7 @@ void display_pin_values() {
     if ( newValue == HIGH && oldValue == LOW) {
       Serial.print("PIN:");
       Serial.print(i);
-      Serial.print(":LOW-HIGH\r\n");
+      Serial.println(":LOW-HIGH");
 //      ledChange(i);
       chageLedGroupMap(i);
     }
@@ -467,7 +453,7 @@ void loopShift74165() {
     display_pin_values();
     oldPinValues = pinValues;
   }
-  delay(POLL_DELAY_MSEC);
+  delay(SHIFT_POLL_DELAY_MSEC);
 
 }
 

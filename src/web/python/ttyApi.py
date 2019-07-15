@@ -115,7 +115,7 @@ if __name__ == "__main__":
     
     parser.add_argument('--httpPort', default=None, dest='httpPort', type=int, help='start http on port if set!')
     parser.add_argument('--httpHost', default='0.0.0.0', dest='httpHost', help='http listen port default 0.0.0.0')
-    parser.add_argument('--mqttHost', default="192.168.88.235", dest='mqttHost', help='Mqtt host default pi-01')
+    parser.add_argument('--mqttHost', default=None, dest='mqttHost', help='Mqtt host default pi-01')
     parser.add_argument('--mqttPort', default=1883, dest='mqttPort', type=int, help='Mqtt port default 1883')
     parser.add_argument('--mqttTopic', default="test", dest='mqttTopic', help='Mqtt topic sub')
     parser.add_argument('--mqttTopicPrefix', default="", dest='mqttTopicPrefix', help='Mqtt topic prefix')

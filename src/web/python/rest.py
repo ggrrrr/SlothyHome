@@ -23,6 +23,7 @@ class SlothyHttp:
         # self.server = HTTPServer((args.httpHost, args.httpPort), handler)
 
 class SlothyHttpHandler(BaseHTTPRequestHandler):
+
     def __init__(self, tty, *args):
         self.LOG = logging.getLogger('slothyHome.tty.SlothyHttp')
         self.tty = tty
@@ -38,7 +39,7 @@ class SlothyHttpHandler(BaseHTTPRequestHandler):
         self.LOG.info("httpCode:%s, GET:%s, query:%s, ts:%s" % (httpCode, self.url.path, self.params, ts))
         return
 
-    def pageError(self, httpCode = 404, msg = "Page not found!"):
+    def pageError(self, httpCode = 500, msg = "Page not found!"):
         ts = datetime.datetime.now() - self.startTime
         self.send_response(httpCode)
         self.send_header('Content-type','text/html')
@@ -48,8 +49,20 @@ class SlothyHttpHandler(BaseHTTPRequestHandler):
         self.LOG.info("httpCode:%s, GET:%s, query:%s, ts:%s, msg:%s" % (httpCode, self.url.path, self.params, ts, msg))
         return
 
-    #	GET is for clients geting the predi
+    def page(self, httpCode = 200, msg = "hi"):
+        ts = datetime.datetime.now() - self.startTime
+        self.send_response(httpCode)
+        self.send_header('Content-type','text/html')
+        self.end_headers()
+        # Send the html message
+        self.wfile.write(bytes(msg, "utf-8") )
+        self.LOG.info("httpCode:%s, GET:%s, query:%s, ts:%s, msg:%s" % (httpCode, self.url.path, self.params, ts, msg))
+        return
+
     def do_GET(self):
+        """
+        curl http://localhost:8080/send?cmd=re
+        """
         self.startTime = datetime.datetime.now()
         self.url = urlparse(self.path)
         self.params = parse_qs(self.url.query)
@@ -61,7 +74,7 @@ class SlothyHttpHandler(BaseHTTPRequestHandler):
                 if self.tty is None:
                     return self.pageError(httpCode = 500, msg="internal tty not set")
                 asd = self.tty.sendDataWait(self.params['cmd'][0])
-                return self.pageError(httpCode = 500, msg="%s" % asd)
+                return self.page( msg="%s" % asd)
 
             return self.pageNotFound(httpCode=400, msg="cmd not set")
         else:
