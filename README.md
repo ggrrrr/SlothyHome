@@ -27,6 +27,11 @@ eeprom:2:111 --> button 2 will control first second and thirt LED PINs (LED PIN 
 * rl - Read Light
 * wl - Write Light
 * we - Write Eeprom
+  * we00b11111111 - 
+    * we (Write Eprom)
+    * 00 (button index) Decimal number 00 -> 0, 01 -> 1 ...
+    * b  (binary)
+    * 11111111 (bit map) the actual bit map of the LED INDEX ( 0, 1, 2, 3, 4 , 5, 6, 7)
 * I - Init EEPROM
 
 

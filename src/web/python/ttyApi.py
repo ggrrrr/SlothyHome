@@ -45,10 +45,11 @@ def parseTtyCallBack(mqtt, lines):
         cmd = line[0:3]
         logging.debug("parseTty:cmd:%s" % ( cmd ))
         if "led" == cmd:
-            lightId = line[4]
             # bytes("%s\n" % data, 'utf-8')
-            status = bytes(remapStatusToHa(line[6]), 'utf-8')
-            logging.debug("parseTtyCallBack:light: %s, status: %s" % ( lightId, status ))
+            ledStr, idxStr, statStr = line.split(":")
+            lightId = idxStr
+            status = bytes(remapStatusToHa(statStr), 'utf-8')
+            logging.info("parseTtyCallBack:light: %s, status: %s" % ( lightId, status ))
             if mqtt is not None:
                 mqtt.publish("light/%s/status" % lightId, status)
 
