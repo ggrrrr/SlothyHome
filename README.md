@@ -1,17 +1,34 @@
-# **SlothyHome**
+# **Slothy Home**
 
 ## **SlothyHome** has three main objectives
 * _Simple_ MCU with fast boot time and very small firmware to control all **basic house hold items** lights, fans and other.
   
-  ### __SlothyHome MCU Buttons__ firmware
+  ### __SlothyHome MCU Buttons__ Arduino
+    * Arduino 
+      * cheep 
+      * open source
+      * many docs
 
 * _Freedom_ to select any computer software sub system which can be updated/upgraded/changed/modified rebooted any time without disrupting living in the house
-* _Enable_ full control over MCU via different interfaces without additional wiring or other components
+
+  ### __SlothyHome MCU Buttons__ firmware Serial CLI
+    * Serial CLI easy to implement on MCU and PC
+      * RS232 very easy 1to1 connection
+      * RS485 _TBC_ many to many connection
+    * Arduino network shield
+      * not very stable, as I have read 
+      * limited functionality compared to full PC
+      * there will be a PC for bigger sub system why not use it!
+
+  ### __SlothyHome API__ with MQTT and REST support 
+    * MQTT for very well suited status update
+    * REST for very well suited for setup and control  
+
+* _Enable_ full control over MCU via different interfaces without (or minimum) additional wiring or other components
   * Mobile access
-  * Rest __SlothyHome API__ 
   * Web
-    * [HomeAutomation](https://www.home-assistant.io)
-    * [Domoticz](http://domoticz.com)
+    * [HomeAutomation](https://www.home-assistant.io) via MQTT and/or REST
+    * [Domoticz](http://domoticz.com) via MQTT and/or REST
     * other...
   * Touch screen GUI (__SlothyHome GUI__ or other)
   * unknown yet...
