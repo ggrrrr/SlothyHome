@@ -112,6 +112,10 @@
 * Example REST call
   * `curl "http://localhost:8080/send?cmd=wlg1"`
 
+
+## Shift Register(s) 74HC165 wiring
+* __TODO add link schematic__
+
 ## Arduino PIN connections
 
 ### Ardiuno LED PINs
