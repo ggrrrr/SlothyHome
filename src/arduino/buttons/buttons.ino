@@ -1,17 +1,17 @@
 #include <EEPROM.h> //Needed to access the eeprom read write functions
 
 // SHIFT REGISTER 74HC165
-#define NUMBER_OF_SHIFT_CHIPS 2
-#define BUTTON_COUNT   NUMBER_OF_SHIFT_CHIPS * 8
-#define PULSE_WIDTH_USEC   5
+#define SHIFT_CHIPS 2
+#define BUTTON_COUNT SHIFT_CHIPS * 8
+#define SHIFT_PULSE_WIDTH_USEC   5
 #define POLL_DELAY_MSEC   1
 
 //#define BYTES_VAL_T unsigned int
 
-int ploadPin        = 8;  // Connect Pin 8 to SH/!LD (shift or active low load) - Pin 1 (!PL) of 74HC165
-int clockEnablePin  = 9;  // Connect Pin 9 to !CE (clock enable, active low) - Pin 15 (!CE) of 74HC165
-int dataPin         = 11; // Connect Pin 11 to SER_OUT (Serial data out) - Pin 9 (Q7) of 74HC165
-int clockPin        = 12; // Connect Pin 12 to CLK (the clock that times the shifting) - Pin 2 (CP) of 74HC165
+#define SHIFT_PLOAD_P 8  // Connect Pin 8 to SH/!LD (shift or active low load) - Pin 1 (!PL) of 74HC165
+#define SHIFT_CE_P    9  // Connect Pin 9 to !CE (clock enable, active low) - Pin 15 (!CE) of 74HC165
+#define SHIFT_DATA_P  11 // Connect Pin 11 to SER_OUT (Serial data out) - Pin 9 (Q7) of 74HC165
+#define SHIFT_CLOCK_P 12 // Connect Pin 12 to CLK (the clock that times the shifting) - Pin 2 (CP) of 74HC165
 
 uint32_t pinValues;
 uint32_t oldPinValues;
@@ -34,38 +34,6 @@ int incomingByte = 0;   // for incoming serial data
 const long timerInterval = 21000; // interval at which to blink (milliseconds)
 unsigned long previousMillis = 0;        // will store last time LED was updated
 
-void initLedGroupMap() {
-  return;
-  for ( int i = 0; i < LED_COUNT; i ++ ) {
-    uint32_t bb = ( (uint32_t )1 << i );
-    ledGroupMap[i] = bb;
-    ledGroupState[i] = LOW;
-    Serial.print(i);
-    Serial.print(":");
-    Serial.print(bb, BIN);
-    Serial.print(":");
-    Serial.print(bb);
-    Serial.println();
-  }
-}
-
-void printLedGroupMap() {
-  for ( int i = 0; i < LED_COUNT; i ++ ) {
-    uint32_t bm = ledGroupMap[i];
-    Serial.print(i);
-    Serial.print(":");
-    Serial.print(bm);
-    Serial.print("->");
-    for (int bits = 31; bits > -1; bits--) {
-      if (bm & ((uint32_t )1 << bits)) {
-        Serial.print(",");
-        Serial.print(bits);
-      }
-    }
-    Serial.println();
-  }
-}
-
 void chageLedGroupMap(int mapIndex) {
     uint32_t bm = ledGroupMap[mapIndex];
     int toState = ! ledGroupState[mapIndex];
@@ -84,18 +52,18 @@ uint32_t read_shift_regs()
 
   /* Trigger a parallel Load to latch the state of the data lines,
   */
-  digitalWrite(clockEnablePin, HIGH);
-  digitalWrite(ploadPin, LOW);
-  delayMicroseconds(PULSE_WIDTH_USEC);
-  digitalWrite(ploadPin, HIGH);
-  digitalWrite(clockEnablePin, LOW);
+  digitalWrite(SHIFT_CE_P, HIGH);
+  digitalWrite(SHIFT_PLOAD_P, LOW);
+  delayMicroseconds(SHIFT_PULSE_WIDTH_USEC);
+  digitalWrite(SHIFT_PLOAD_P, HIGH);
+  digitalWrite(SHIFT_CE_P, LOW);
 
   /* Loop to read each bit value from the serial out line
      of the SN74HC165N.
   */
   for (int i = 0; i < BUTTON_COUNT; i++)
   {
-    bitVal = digitalRead(dataPin);
+    bitVal = digitalRead(SHIFT_DATA_P);
 
     /* Set the corresponding bit in bytesVal.
     */
@@ -103,9 +71,9 @@ uint32_t read_shift_regs()
 
     /* Pulse the Clock (rising edge shifts the next bit).
     */
-    digitalWrite(clockPin, HIGH);
-    delayMicroseconds(PULSE_WIDTH_USEC);
-    digitalWrite(clockPin, LOW);
+    digitalWrite(SHIFT_CLOCK_P, HIGH);
+    delayMicroseconds(SHIFT_PULSE_WIDTH_USEC);
+    digitalWrite(SHIFT_CLOCK_P, LOW);
   }
 
   return (bytesVal);
@@ -153,7 +121,7 @@ void sendInfoEEPROM() {
 void writeDefaultEEPROM(int p_address) {
   Serial.println("i.eeprom.defaut.");
 
-  for (int i = 0; i < BUTTON_COUNT; i++) {
+  for (int i = 0; i < LED_COUNT; i++) {
     uint32_t ledMap =  (uint32_t)1 << i;
     eepromWriteGroupMap(0, i, ledMap);
     p_address ++;
@@ -420,21 +388,19 @@ void setup() {
 
   /* Initialize our digital pins...
   */
-  pinMode(ploadPin, OUTPUT);
-  pinMode(clockEnablePin, OUTPUT);
-  pinMode(clockPin, OUTPUT);
-  pinMode(dataPin, INPUT);
+  pinMode(SHIFT_PLOAD_P, OUTPUT);
+  pinMode(SHIFT_CE_P, OUTPUT);
+  pinMode(SHIFT_CLOCK_P, OUTPUT);
+  pinMode(SHIFT_DATA_P, INPUT);
 
-  digitalWrite(clockPin, LOW);
-  digitalWrite(ploadPin, HIGH);
+  digitalWrite(SHIFT_CLOCK_P, LOW);
+  digitalWrite(SHIFT_PLOAD_P, HIGH);
 
   pinValues = initShift74165();
-  initLedGroupMap();
-  printLedGroupMap();
 
   oldPinValues = pinValues;
   pinValues = read_shift_regs();
-  display_pin_values();
+//  display_pin_values();
 
   readEEPROM(0);
 
