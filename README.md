@@ -1,6 +1,6 @@
-# **Slothy Home**
+# **SlothyHome**
 
-## **Slothy Home** has three main objectives
+## **SlothyHome** has three main objectives
 * _Simple_ MCU with fast boot time and very small firmware to control all **basic house hold items** lights, fans and other.
   
   ### __SlothyHome MCU Buttons__ firmware
@@ -16,7 +16,7 @@
   * Touch screen GUI (__SlothyHome GUI__ or other)
   * unknown yet...
 
-## **Slothy Home MCU** functionality TBC
+## **SlothyHome MCU** functionality TBC
 * **LED** in the lights buttons/switches
   * controlled leds per button
   * just LED to show where is the main button/switch
@@ -31,7 +31,7 @@
 * **KNX**
   * __TBC___
 
-## **Slothy Home project folders**
+## **SlothyHome project folders**
 * `src/arduino/buttons/` -> __SlothyHome MCU Buttons__ firmware
 * `src/gui/python/` -> __SlothyHome GUI__ Touch screens UI
 * `src/web/python/` -> __SlothyHome API__ Interface between Serial CLI and any REST/MQTT sub systems 
