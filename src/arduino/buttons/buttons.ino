@@ -36,6 +36,11 @@ int incomingByte = 0;   // for incoming serial data
 const long timerInterval = 21000; // interval at which to blink (milliseconds)
 unsigned long previousMillis = 0;        // will store last time LED was updated
 
+// functions
+void eepromWriteGroupMap(int p_address, int gIdx, uint32_t ledMap);
+int readCmdNumber( String number);
+
+
 uint32_t read_shift_regs()
 {
   long bitVal;
