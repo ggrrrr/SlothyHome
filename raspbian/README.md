@@ -10,7 +10,11 @@ sudo apt-get install vim
 sudo apt install dnsmasq hostapd
 sudo apt-get install arduino-mk 
 sudo apt-get install git 
+sudo apt-get install python3-pip
 
+python3 -m pip install paho.mqtt
+python3 -m pip install pySerial
+python3 -m pip install requests
 ```
 
 ### Modify file `/etc/sysctl.conf`

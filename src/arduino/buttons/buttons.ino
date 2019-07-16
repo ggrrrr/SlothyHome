@@ -13,6 +13,7 @@
 uint32_t pinValues;
 uint32_t oldPinValues;
 
+// Cinpik
 const String COMPILE_DATE = __DATE__ " " __TIME__;  //compile date that is used for a unique identifier
 
 //FIXME make it eeprom
@@ -34,17 +35,6 @@ int incomingByte = 0;   // for incoming serial data
 
 const long timerInterval = 21000; // interval at which to blink (milliseconds)
 unsigned long previousMillis = 0;        // will store last time LED was updated
-
-void chageLedGroupMap(int mapIndex) {
-    uint32_t bm = ledGroupMap[mapIndex];
-    int toState = ! ledGroupState[mapIndex];
-    ledGroupState[mapIndex] = toState;
-    for (int bits = 31; bits > -1; bits--) {
-      if (bm & ((uint32_t )1 << bits)) {
-        ledChage(bits, toState);
-      }
-    }
-}
 
 uint32_t read_shift_regs()
 {
@@ -240,6 +230,17 @@ void readLight(String cmd) {
   }
   int idx = idxB - '0';
   sendInfoLed(idx);
+}
+
+void chageLedGroupMap(int mapIndex) {
+    uint32_t bm = ledGroupMap[mapIndex];
+    int toState = ! ledGroupState[mapIndex];
+    ledGroupState[mapIndex] = toState;
+    for (int bits = 31; bits > -1; bits--) {
+      if (bm & ((uint32_t )1 << bits)) {
+        ledChage(bits, toState);
+      }
+    }
 }
 
 void writeLight(String cmd) {
