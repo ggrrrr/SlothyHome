@@ -74,6 +74,7 @@
 
 ## _TODO_
 * Proper JSON REST responses
+* ADC for 220V AC amp meter
 * PWM controlled lights - *need to work on PWM schematic and controller*
 * I2C temperature, and other sensors - *it is quite slow when reading*
 * Second RS485 for Serial CLI - *to enable multiple Arduino boards with single computer system*
