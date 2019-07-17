@@ -36,49 +36,9 @@ int incomingByte = 0;   // for incoming serial data
 const long timerInterval = 21000; // interval at which to blink (milliseconds)
 unsigned long previousMillis = 0;        // will store last time LED was updated
 
-// functions
-void eepromWriteGroupMap(int p_address, int gIdx, uint32_t ledMap);
-int readCmdNumber( String number);
-
-
-uint32_t read_shift_regs()
-{
-  long bitVal;
-  uint32_t bytesVal = 0;
-
-  /* Trigger a parallel Load to latch the state of the data lines,
-  */
-  digitalWrite(SHIFT_CE_P, HIGH);
-  digitalWrite(SHIFT_PLOAD_P, LOW);
-  delayMicroseconds(SHIFT_PULSE_WIDTH_USEC);
-  digitalWrite(SHIFT_PLOAD_P, HIGH);
-  digitalWrite(SHIFT_CE_P, LOW);
-
-  /* Loop to read each bit value from the serial out line
-     of the SN74HC165N.
-  */
-  for (int i = 0; i < BUTTON_COUNT; i++)
-  {
-    bitVal = digitalRead(SHIFT_DATA_P);
-
-    /* Set the corresponding bit in bytesVal.
-    */
-    bytesVal |= (bitVal << ((BUTTON_COUNT - 1) - i));
-
-    /* Pulse the Clock (rising edge shifts the next bit).
-    */
-    digitalWrite(SHIFT_CLOCK_P, HIGH);
-    delayMicroseconds(SHIFT_PULSE_WIDTH_USEC);
-    digitalWrite(SHIFT_CLOCK_P, LOW);
-  }
-
-  return (bytesVal);
-}
-
-
-// Serial send done.
+// Serial send done"."
 void sendDone() {
-  Serial.println(";");
+  Serial.println(".");
 }
 
 void heartBeatResponse() {
@@ -200,8 +160,6 @@ void buttonFell(int idx) {
   ledChange(idx);
   sendDone();
 }
-
-char buf[80];
 
 int readline(int readch, char *buffer, int len) {
   static int pos = 0;
@@ -352,6 +310,41 @@ void processCmd(char *command) {
   sendDone();
 }
 
+// -- SHIFT 
+uint32_t shift74165ReadData()
+{
+  long bitVal;
+  uint32_t bytesVal = 0;
+
+  /* Trigger a parallel Load to latch the state of the data lines,
+  */
+  digitalWrite(SHIFT_CE_P, HIGH);
+  digitalWrite(SHIFT_PLOAD_P, LOW);
+  delayMicroseconds(SHIFT_PULSE_WIDTH_USEC);
+  digitalWrite(SHIFT_PLOAD_P, HIGH);
+  digitalWrite(SHIFT_CE_P, LOW);
+
+  /* Loop to read each bit value from the serial out line
+     of the SN74HC165N.
+  */
+  for (int i = 0; i < BUTTON_COUNT; i++)
+  {
+    bitVal = digitalRead(SHIFT_DATA_P);
+
+    /* Set the corresponding bit in bytesVal.
+    */
+    bytesVal |= (bitVal << ((BUTTON_COUNT - 1) - i));
+
+    /* Pulse the Clock (rising edge shifts the next bit).
+    */
+    digitalWrite(SHIFT_CLOCK_P, HIGH);
+    delayMicroseconds(SHIFT_PULSE_WIDTH_USEC);
+    digitalWrite(SHIFT_CLOCK_P, LOW);
+  }
+
+  return (bytesVal);
+}
+
 uint32_t initShift74165() {
 
   long bitVal;
@@ -367,6 +360,45 @@ uint32_t initShift74165() {
   }
   return bytesVal;
 }
+
+void shift74165ProcessData() {
+  //  Serial.println("Shift");
+  for (int i = 0; i < BUTTON_COUNT; i++) {
+
+    int newValue = LOW;
+    int oldValue = LOW;
+
+    if ((pinValues >> i) & 1) {
+      newValue = HIGH;
+    } else {
+    }
+
+    if ((oldPinValues >> i) & 1) {
+      oldValue = HIGH;
+      //    Serial.print("HIGH");
+    } else {
+      //    Serial.print("LOW");
+    }
+
+    if ( newValue == HIGH && oldValue == LOW) {
+//      ledChange(i);
+      chageLedGroupMap(i);
+    }
+  }
+}
+
+void loopShift74165() {
+  pinValues = shift74165ReadData();
+  if (pinValues != oldPinValues) {
+    //Serial.print("*Pin value change detected*\r\n");
+    shift74165ProcessData();
+    oldPinValues = pinValues;
+  }
+  delay(SHIFT_POLL_DELAY_MSEC);
+
+}
+
+// -- SHIFT --
 
 void setup() {
   Serial.begin(9600);
@@ -391,7 +423,7 @@ void setup() {
   pinValues = initShift74165();
 
   oldPinValues = pinValues;
-  pinValues = read_shift_regs();
+  pinValues = shift74165ReadData();
 //  display_pin_values();
 
   readEEPROM(0);
@@ -419,49 +451,8 @@ void checkTimer() {
   }
 }
 
-/* Dump the list of zones along with their current status.
-*/
-void display_pin_values() {
-  //  Serial.println("Shift");
-  for (int i = 0; i < BUTTON_COUNT; i++) {
 
-    int newValue = LOW;
-    int oldValue = LOW;
-
-    if ((pinValues >> i) & 1) {
-      newValue = HIGH;
-    } else {
-    }
-
-    if ((oldPinValues >> i) & 1) {
-      oldValue = HIGH;
-      //    Serial.print("HIGH");
-    } else {
-      //    Serial.print("LOW");
-    }
-
-    if ( newValue == HIGH && oldValue == LOW) {
-      Serial.print("PIN:");
-      Serial.print(i);
-      Serial.println(":LOW-HIGH");
-//      ledChange(i);
-      chageLedGroupMap(i);
-    }
-  }
-}
-
-void loopShift74165() {
-  /* If there was a chage in state, display which ones changed.
-  */
-  pinValues = read_shift_regs();
-  if (pinValues != oldPinValues) {
-    //Serial.print("*Pin value change detected*\r\n");
-    display_pin_values();
-    oldPinValues = pinValues;
-  }
-  delay(SHIFT_POLL_DELAY_MSEC);
-
-}
+char buf[80];
 
 void loop() {
   //  loopDebouncers();
