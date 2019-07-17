@@ -36,6 +36,11 @@ int incomingByte = 0;   // for incoming serial data
 const long timerInterval = 21000; // interval at which to blink (milliseconds)
 unsigned long previousMillis = 0;        // will store last time LED was updated
 
+
+int readCmdNumber( String number) {
+  return number.toInt();
+}
+
 // Serial send done"."
 void sendDone() {
   Serial.println(".");
@@ -278,10 +283,6 @@ void processWrite(String cmd) {
     default:
       Serial.println("ERR W");
   }
-}
-
-int readCmdNumber( String number) {
-  return number.toInt();
 }
 
 // Process comand
