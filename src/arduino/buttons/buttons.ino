@@ -73,6 +73,9 @@ void sendInfoEEPROM() {
   }
 }
 
+void setLedGroupMap(int bIdx, uint32_t ledIdx) {
+  ledGroupMap[bIdx] = ledIdx;
+}
 
 void eepromWriteGroupMap(int p_address, int gIdx, uint32_t ledMap) {
   int add = p_address + (4 * gIdx);
@@ -101,10 +104,6 @@ void writeDefaultEEPROM(int p_address) {
     eepromWriteGroupMap(0, i, ledMap);
     p_address ++;
   }
-}
-
-void setLedGroupMap(int bIdx, uint32_t ledIdx) {
-  ledGroupMap[bIdx] = ledIdx;
 }
 
 void readEEPROM(int p_address) {
