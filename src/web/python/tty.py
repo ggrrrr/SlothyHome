@@ -16,6 +16,7 @@ class SlothyTty():
         self.callBack = None
         self.connect()
         self.serial = None
+        self.blockEnd = "."
 
     def listDevices(self):
         out = []
@@ -79,7 +80,7 @@ class SlothyTty():
                         self.LOG.info("GOT.NL:%s" % line)
                         line = ""
                     
-                    if ";" in bytesInUtf.rstrip():
+                    if self.blockEnd in line:
                         done = 0
                         self.LOG.info("GOT.END.")
         
