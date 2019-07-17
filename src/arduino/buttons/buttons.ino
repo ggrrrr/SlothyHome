@@ -135,7 +135,7 @@ void heartBeatEvent() {
   sendDone();
 }
 
-void ledChage(int idx, int state) {
+void gpioChangeState(int idx, int state) {
   if ( idx >= 0 && idx < LED_COUNT) {
     digitalWrite(ledPins[idx], state);
     ledStates[idx] = state;
@@ -146,22 +146,22 @@ void ledChage(int idx, int state) {
   }
 }
 
-void ledUp(int idx) {
-  ledChage(idx, HIGH);
+void gpioStateHigh(int idx) {
+  gpioChangeState(idx, HIGH);
 }
 
-void ledDown(int idx) {
-  ledChage(idx, LOW);
+void gpioStateLow(int idx) {
+  gpioChangeState(idx, LOW);
 }
 
-void ledChange(int idx) {
+void ledToggle(int idx) {
   int ledState = ledStates[idx] ? LOW : HIGH;
-  ledChage(idx, ledState);
+  gpioChangeState(idx, ledState);
 }
 
 void buttonFell(int idx) {
 //  int ledIdx = buttonMap[idx];
-  ledChange(idx);
+  ledToggle(idx);
   sendDone();
 }
 
@@ -187,7 +187,7 @@ int readline(int readch, char *buffer, int len) {
   return 0;
 }
 
-void readLight(String cmd) {
+void readGpioState(String cmd) {
   byte idxB = cmd[2];
   if ( idxB == 0 ) {
     for (int i = 0; i < LED_COUNT; i++) {
@@ -205,12 +205,12 @@ void chageLedGroupMap(int mapIndex) {
     ledGroupState[mapIndex] = toState;
     for (int bits = 31; bits > -1; bits--) {
       if (bm & ((uint32_t )1 << bits)) {
-        ledChage(bits, toState);
+        gpioChangeState(bits, toState);
       }
     }
 }
 
-void writeLight(String cmd) {
+void processGpioCommand(String cmd) {
   char lCmd = cmd[2];
   byte idxB = cmd[3];
   if ( idxB == 0 ) {
@@ -220,13 +220,13 @@ void writeLight(String cmd) {
 
   switch (lCmd) {
     case 'c':
-      ledChange(idx);
+      ledToggle(idx);
       break;
     case 'h':
-      ledUp(idx);
+      gpioStateHigh(idx);
       break;
     case 'l':
-      ledDown(idx);
+      gpioStateLow(idx);
       break;
     case 'g':
       chageLedGroupMap(idx);
@@ -251,7 +251,7 @@ void writeEEPROM(String cmd) {
 void processRead(String cmd) {
   switch (cmd[1]) {
     case 'l':
-      readLight(cmd);
+      readGpioState(cmd);
       break;
     case 'e':
       sendInfoEEPROM();
@@ -272,7 +272,7 @@ void processRead(String cmd) {
 void processWrite(String cmd) {
   switch (cmd[1]) {
     case 'l':
-      writeLight(cmd);
+      processGpioCommand(cmd);
       break;
     case 'e':
       writeEEPROM(cmd);
@@ -304,7 +304,7 @@ void processCmd(char *command) {
       writeDefaultEEPROM(0);
       break;
     default:
-      ledChange(0);
+      ledToggle(0);
       Serial.println("ERR C");
   }
   sendDone();
