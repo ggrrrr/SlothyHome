@@ -74,19 +74,6 @@ void sendInfoEEPROM() {
 }
 
 
-void writeDefaultEEPROM(int p_address) {
-  Serial.println("i:eeprom:defaut:");
-  for (int i = 0; i < LED_COUNT; i++) {
-    uint32_t ledMap =  (uint32_t)1 << i;
-    eepromWriteGroupMap(0, i, ledMap);
-    p_address ++;
-  }
-}
-
-void setLedGroupMap(int bIdx, uint32_t ledIdx) {
-  ledGroupMap[bIdx] = ledIdx;
-}
-
 void eepromWriteGroupMap(int p_address, int gIdx, uint32_t ledMap) {
   int add = p_address + (4 * gIdx);
   uint8_t ledMap0 = ledMap;
@@ -105,6 +92,19 @@ void eepromWriteGroupMap(int p_address, int gIdx, uint32_t ledMap) {
   EEPROM.write(add + 2, ledMap2);
   EEPROM.write(add + 3, ledMap3);
   setLedGroupMap(gIdx, ledMap);
+}
+
+void writeDefaultEEPROM(int p_address) {
+  Serial.println("i:eeprom:defaut:");
+  for (int i = 0; i < LED_COUNT; i++) {
+    uint32_t ledMap =  (uint32_t)1 << i;
+    eepromWriteGroupMap(0, i, ledMap);
+    p_address ++;
+  }
+}
+
+void setLedGroupMap(int bIdx, uint32_t ledIdx) {
+  ledGroupMap[bIdx] = ledIdx;
 }
 
 void readEEPROM(int p_address) {
