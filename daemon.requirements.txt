@@ -1,0 +1,6 @@
+future==0.18.2
+iso8601==0.1.12
+paho-mqtt==1.5.0
+pkg-resources==0.0.0
+pyserial==3.4
+PyYAML==5.1.2
