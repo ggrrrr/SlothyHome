@@ -1,44 +1,52 @@
 # **Slothy Home**
 
-## **SlothyHome** has three main objectives
-* _Simple_ MCU with fast boot time and very small firmware to control all **basic house hold items** lights, fans and other.
-  
-  ### __SlothyHome MCU Buttons__ Arduino
+## **SlothyHome** has these main objectives
+* Basic functionality to run on simple device - easy to fix easy to replace, fast boot time
+  * function like switching on/off lights, fans, heaters etc.
+  * accept commands of buttons/switches , temp sensors, door sensors, humidity etc.
+* Complex functionality to run on complex device - more and more options, upgrades, updates etc
+  * Monitoring
+  * Mobile / Remote access
+  * Logging
+  * Statistics
+  * Notifications
+  * Scheduling of tasks
+  * AI
+  * Backup
+* To have freedom to select any computer system for the complex part
+ 
+In general the idea is to split the system in to two main sub systems.
+### _System 1_ to control all **basic house hold items** lights, fans etc. To be very small and simple, with very very tiny firmware. After some time to have stable firmware version (limited to the MCU), and there will be no need of updates/upgrades/restarts.
+### _System 2_ API to the _System 1_ to be computer based software. All upgrades/updates and other changes of that system will not effect the people who are living in the premises, to use as standard as possible protocols.
+
+## **SlothyHome** implementation choice
+
+  ### __SlothyHome MCU Buttons__ Arduino - _System 1_
     * Arduino 
       * cheep 
       * open source
       * many docs
-
-* _Freedom_ to select any computer software sub system which can be updated/upgraded/changed/modified rebooted any time without disrupting living in the house
-
-  ### __SlothyHome MCU Buttons__ firmware Serial CLI
     * Serial CLI easy to implement on MCU and PC
       * RS232 very easy 1to1 connection
-      * RS485 _TBC_ many to many connection
-    * Arduino network shield
-      * not very stable, as I have read 
-      * limited functionality compared to full PC
-      * there will be a PC for bigger sub system why not use it!
+      * RS485 many to many serial connection __TODO__
 
-  ### __SlothyHome API__ with MQTT and REST support 
-    * MQTT for very well suited status update
-    * REST for very well suited for setup and control  
-
-* _Enable_ full control over MCU via different interfaces without (or minimum) additional wiring or other components
-  * Mobile access
-  * Web
-    * [HomeAutomation](https://www.home-assistant.io) via MQTT and/or REST
-    * [Domoticz](http://domoticz.com) via MQTT and/or REST
-    * other...
-  * Touch screen GUI (__SlothyHome GUI__ or other)
-  * unknown yet...
+  ### __SlothyHome API__ with MQTT and REST support - _System 2_
+    * MQTT is very well suited status update
+    * REST is very well suited for setup and control
 
 ## **SlothyHome MCU** functionality TBC
-* **LED** in the lights buttons/switches
-  * controlled leds per button
-  * just LED to show where is the main button/switch
-  * No LED
-* **I2C temp, humidity, sensors ...**
+* **Switch** - these are actial OUT pins of the MCU, to control lights, fans heaters etc.
+  * controlled output PIN
+  * group pins
+  * switch off delay _TODO_
+  * Status udpate via RS
+* **PWM** - _TODO_
+  * Status udpate via RS
+* **Buttons** - these are IN pins, multiplied via "shift register" see 74HC165 or other
+  * configure which buttons index controls which Switch Group
+  * multiple buttons to control single Switch group
+  * status update via RS
+* **I2C temp, humidity, sensors ...** _TODO_
   * I2C on arduino in general generates very slow responses and can disrupt other functionality
   * if implemented in the same firmware or additional MCU
 * **Heating control**
@@ -49,9 +57,9 @@
   * __TBC___
 
 ## **SlothyHome project folders**
-* `src/arduino/buttons/` -> __SlothyHome MCU Buttons__ firmware
-* `src/gui/python/` -> __SlothyHome GUI__ Touch screens UI
-* `src/web/python/` -> __SlothyHome API__ Interface between Serial CLI and any REST/MQTT sub systems 
+* `arduino/buttons/` -> __SlothyHome MCU Buttons__ firmware
+* `gui/src/python/` -> __SlothyHome GUI__ Touch screens UI
+* `rs2tcp/src/python/` -> __SlothyHome API__ Interface between Serial CLI and any REST/MQTT sub systems 
 * `raspbian/boot/` -> Some help for raspbian
 * `etc/` -> some help files GUI for linux lxde startup scripts 
 
