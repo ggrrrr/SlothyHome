@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Report UI</title>
+	<link rel="stylesheet" type="text/css" href="https://www.jeasyui.com/easyui/themes/default/easyui.css">
+	<link rel="stylesheet" type="text/css" href="https://www.jeasyui.com/easyui/themes/icon.css">
+	<link rel="stylesheet" type="text/css" href="https://www.jeasyui.com/easyui/demo/demo.css">
+	<script type="text/javascript" src="https://code.jquery.com/jquery-1.6.1.min.js"></script>
+	<script type="text/javascript" src="https://www.jeasyui.com/easyui/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="https://www.jeasyui.com/easyui/jquery.edatagrid.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+</head>
+<body>
+    <div class="demo-info" style="margin-bottom:10px">
+        <h2 id="baseUrlDiv" >Report UI</h2>
+    </div>
+    <div style="margin:20px 0 10px 0;"></div>
+    <div id="tt" class="easyui-tabs" style="width:800pt;height:450pt;">
+
+        <div title="Report" style="padding:10px">
+                <form id="reportForm" 
+                    action="/send" 
+                    method="get" 
+                    >
+                    <div style="margin:10px 0;"></div>
+                    <div class="easyui-panel" style="width:100%;max-width:700pt;padding:5px 5px;">
+                        <div style="margin-bottom:10px">
+                            <input class="easyui-textbox" name="cmd" label="Command:" 
+                                labelPosition="left" labelWidth="100pt"
+                                style="width:70%;">
+                        </div>
+
+                    </div>
+                    <div style="text-align:center;padding:5px 0">
+                            <input type="submit" value="Submit"></input>
+                    </div>
+            </form>
+        </div>
+
+    </div>
+    <table id="reportTable" title="Report" style="width:800px;height:700px;"
+        rownumbers="true" pagination="false"
+        fitColumns="true" singleSelect="false">
+        <thead>
+        </thead>
+    </table>
+
+    <div id="transactionView" class="easyui-dialog" 
+            title="View" data-options="iconCls:'icon-view'" 
+            style="width:80%;height:80%;padding:5px">
+        <table id="transactionViewTable" class="easyui-propertygrid"
+            style="width:100%" 
+            data-options="
+            showGroup:true,
+            scrollbarSize:1
+            ">
+        </table>
+    </div>
+</style>
+    <script type="text/javascript">
+
+        function myformatter(date){
+            var y = date.getFullYear();
+            var m = date.getMonth()+1;
+            var d = date.getDate();
+            return y+'-'+(m<10?('0'+m):m)+'-'+(d<10?('0'+d):d);
+        }
+        function myparser(s){
+            if (!s) return new Date();
+            var ss = (s.split('-'));
+            var y = parseInt(ss[0],10);
+            var m = parseInt(ss[1],10);
+            var d = parseInt(ss[2],10);
+            if (!isNaN(y) && !isNaN(m) && !isNaN(d)){
+                return new Date(y,m-1,d);
+            } else {
+                return new Date();
+            }
+        }
+
+
+        var login;
+        var token;
+        $( "#logout" ).click(function() {
+            console.log( "logout." );
+            token = undefined;
+            Cookies.remove("COOL_TOKEN");
+            $("#reportTable").hide();
+            $('#tt').tabs('enableTab', 'Login');
+            $('#tt').tabs('disableTab', 'Logout');
+            $('#tt').tabs('disableTab', 'Report');
+            $('#tt').tabs('select', 'Login');
+        });
+
+
+		$(function(){
+			$('#loginForm').form({
+				success:function(data){
+                    json = jQuery.parseJSON(data);
+                    if ( json.code == 200) {
+                        login = json.data;
+                        token = login.token;
+                        Cookies.set("COOL_TOKEN", token);
+                        console.log( "login.token:" + token );
+                        $('#tt').tabs('enableTab', 'Logout');
+                        $('#tt').tabs('enableTab', 'Report');
+                        $('#tt').tabs('select', 'Report');
+                        $("#reportTable").show();
+                        $.messager.alert('Info', login.status, 'info');
+                    } else {
+                        $.messager.alert('Error', json.message, 'error');
+                    }
+				}
+			});
+		});
+
+		$(function(){
+			$('#reportForm').form({
+				success:function(data){
+                    json = jQuery.parseJSON(data);
+                    if ( json.code == 200) {
+                        report = json.data;
+                        $('#reportTable').datagrid({
+                            data: report.response,
+                            columns:[[
+                                {field:'count',title:'count',width:100},
+                                {field:'total',title:'total',width:100},
+                                {field:'currency',title:'currency',width:100,align:'right'}
+                            ]]
+
+                        });
+                        $("#reportDG").show();
+                    } else {
+                        $.messager.alert('Error', json.message, 'error');
+
+                    }
+				}
+			});
+		});
+        // First, checks if it isn't implemented yet.
+        if (!String.prototype.format) {
+        String.prototype.format = function() {
+            var args = arguments;
+            return this.replace(/{(\d+)}/g, function(match, number) { 
+            return typeof args[number] != 'undefined'
+                ? args[number]
+                : match
+            ;
+            });
+        };
+        }
+        // fx.merchant
+        function formatterFx(val, row) {
+            var out = "{0} [{1}]->{2} [{3}]".format (
+                    (val.merchant.originalAmount)/100
+                    ,val.merchant.originalCurrency
+                    ,(val.merchant.convertedAmount/100)
+                    ,val.merchant.convertedCurrency);
+            return out;
+        }
+
+        // customerInfo
+        function formatterCustomerInfo(val, row) {
+            var out = "{0} {2} {3}".format (
+                    val.number
+                    ,val.email
+                    ,val.billingFirstName
+                    ,val.billingLastName
+                    );
+            return out;
+        }
+
+        // transaction.merchant
+        function formatterTransactionMerchant(val, row) {
+            var out = "{0} {1}".format (
+                    val.merchant.referenceNo
+                    ,val.merchant.status
+                    );
+            return out;
+        }
+        // transaction.merchant
+        function formatterTransactionId(val, row) {
+            var out = "{0}".format (val.merchant.transactionId);
+            return out;
+        }
+
+		$(function(){
+			$('#transactionsForm').form({
+				success:function(data){
+                    json = jQuery.parseJSON(data);
+                    if ( json.code == 200) {
+                    report = json.data;
+                    var table = $('#reportTable');
+                    // $('#reportTable').datagrid('getPager').pagination({
+                    //     layout:['list','sep','first','prev','sep','manual','sep','next','last','sep','refresh','info']
+
+                    // });
+                    // table.datagrid({pagePosition:'top'});
+                    // table.datagrid('getPager').pagination({
+                    //     buttons:[{iconCls:'icon-add'}],
+                    //     layout:['next']
+                    // });
+                    table.datagrid({
+                        data: report.data,
+                        columns:[[
+                            {field:'transaction',title:'id',width:100,formatter:formatterTransactionId}
+                            ,{field:'fx',title:'FX',width:100,formatter:formatterFx}
+                            ,{field:'customerInfo',title:'customerInfo',width:100,formatter:formatterCustomerInfo}
+                            ,{field:'transaction',title:'transaction',width:100,formatter:formatterTransactionMerchant}
+                        ]],
+                        singleSelect:true,
+                        toolbar: [{
+                                    text:'Transaction View',
+                                    handler: function(){
+                                        var row = $('#reportTable').datagrid('getSelected');
+                                        console.log("for row:"+row)
+                                        var transactionId = formatterTransactionId(row.transaction);
+                                        $.post( "/transaction"
+                                            , { transactionId: transactionId}
+                                            , function( data ) {
+                                                console.log(data);
+                                                $('#transactionView').dialog({title:'Transaction view:'+transactionId});
+                                                $('#transactionView').dialog('open');
+
+                                                $('#transactionViewTable').datagrid({
+                                                        data: data.data
+                                                    });
+                                                }
+                                            );
+                                    }
+                                }
+                                
+                                ,'-'
+                                ,{
+                                    text:'Client View',
+                                    handler: function(){
+                                        var row = $('#reportTable').datagrid('getSelected');
+                                        console.log("for row:"+row)
+                                        var transactionId = formatterTransactionId(row.transaction);
+                                        $.post( "/client"
+                                            , { transactionId: transactionId}
+                                            , function( data ) {
+                                                $('#transactionView').dialog({title:'Client view:'+transactionId});
+                                                $('#transactionView').dialog('open');
+
+                                                $('#transactionViewTable').datagrid({
+                                                        data: data.data
+                                                    });
+                                                }
+                                            );
+                                    }
+                                }
+                                ]    
+                    });
+                    $("#reportDG").show();
+
+                    } else {
+					    $.messager.alert('Error', json.message, 'error');
+
+                    }
+                    // $("#loginDiv").hide();
+					// $.messager.alert('Info', login.status, 'info');
+
+				}
+			});
+		});
+
+        $( document ).ready(function() {
+            console.log( "ready!" );
+            $('#transactionView').dialog('close');
+            // var cookieToken = $.cookie("COOL_TOKEN");
+            var cookieToken = Cookies.get('COOL_TOKEN')
+            $("#reportDG").hide();
+            if ( typeof cookieToken === "undefined") {
+                token = undefined;
+                $('#tt').tabs('disableTab', 'Report');
+                $('#tt').tabs('disableTab', 'Logout');
+                $("#reportTable").hide();
+            } else {
+                token = cookieToken;
+                $('#tt').tabs('disableTab', 'Login');
+                $('#tt').tabs('select', 'Report');
+            }
+            console.log( "cookieToken:" + cookieToken);
+            $.get("/baseUrl", function(data, status){
+                console.log("baseUrl: " + data + "\nStatus: " + status);
+                $("#baseUrlDiv").html("Report UI:" + data);
+            });
+        });
+	</script>
+</body>
+</html>

@@ -11,12 +11,15 @@ class SlothyTty():
         self.serial = None
         self.stopLoop = 1
         self.timeSleepReadLoop = 0.5
-        self.timeSleepWrite = 0.1
+        self.timeSleepWrite = 0.5
         self.timeSleepWriteLoop = 0.1
         self.callBack = None
         self.connect()
         self.serial = None
         self.blockEnd = "."
+        self.blockStart = "cmd"
+        self.blockWait = 0
+        self.blocks = []
 
     def listDevices(self):
         out = []
@@ -79,11 +82,22 @@ class SlothyTty():
                         readLines.append(line)
                         self.LOG.info("GOT.NL:%s" % line)
                         line = ""
-                    
-                    if self.blockEnd in line:
                         done = 0
-                        self.LOG.info("GOT.END.")
-        
+
+                    if self.blockStart in bytesInUtf:
+                        self.blocks = []
+                        self.blockWait = 1
+                        self.LOG.info("BLOCK.START.")
+
+                    if self.blockEnd in bytesInUtf:
+                        self.blocks.append(readLines)
+                        self.blockWait = 0
+                        self.LOG.info("BLOCK.END:%s" % readLines)
+
+        if len(readLines) > 0:
+            self.LOG.info("readData.readLines:%s" % ( readLines))
+
+
         self.ttyFree = 1
         if len(readLines) > 0:
             self.LOG.info("readData.data:%s" % ( readLines))

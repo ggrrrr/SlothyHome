@@ -1,6 +1,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 from urllib.parse import urlparse, parse_qs
+import os
 import datetime
 import logging
 import time
@@ -59,17 +60,32 @@ class SlothyHttpHandler(BaseHTTPRequestHandler):
         self.LOG.info("httpCode:%s, GET:%s, query:%s, ts:%s, msg:%s" % (httpCode, self.url.path, self.params, ts, msg))
         return
 
-    def do_GET(self):
-        """
-        curl http://localhost:8080/send?cmd=re
-        """
-        self.startTime = datetime.datetime.now()
-        self.url = urlparse(self.path)
-        self.params = parse_qs(self.url.query)
-        # print("path: %s" % url.path)
-        # print("query: %s" % params)
-        if self.url.path == "/send":
-            self.LOG.info("GET:%s, query: %s" % (self.url.path, self.params))
+    def do_Static(self):
+        root = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'static/index.html')
+        self.LOG.info("send:static:root:%s, path:%s" % (root, self.path))
+        self.LOG.info("send:%s, query: %s" % (self.url.path, self.params))
+        self.send_response(200)
+        filename = root
+        if filename[-4:] == '.css':
+            self.send_header('Content-type', 'text/css')
+        elif filename[-5:] == '.json':
+            self.send_header('Content-type', 'application/javascript')
+        elif filename[-3:] == '.js':
+            self.send_header('Content-type', 'application/javascript')
+        elif filename[-4:] == '.ico':
+            self.send_header('Content-type', 'image/x-icon')
+        else:
+            self.send_header('Content-type', 'text/html')
+        self.end_headers()
+        with open(filename, 'rb') as fh:
+            html = fh.read()
+            #html = bytes(html, 'utf8')
+            self.wfile.write(html)
+
+
+
+    def do_Send(self):
+            self.LOG.info("send:%s, query: %s" % (self.url.path, self.params))
             if 'cmd' in self.params:
                 if self.tty is None:
                     return self.pageError(httpCode = 500, msg="internal tty not set")
@@ -77,8 +93,30 @@ class SlothyHttpHandler(BaseHTTPRequestHandler):
                 return self.page( msg="%s" % asd)
 
             return self.pageNotFound(httpCode=400, msg="cmd not set")
-        else:
-            return self.pageNotFound(httpCode=404)
+
+
+    def do_GET(self):
+        """
+        curl http://localhost:8080/send?cmd=re
+        """
+        self.startTime = datetime.datetime.now()
+        self.url = urlparse(self.path)
+        self.params = parse_qs(self.url.query)
+        self.LOG.info("GET:url:%s, path:%s" % (self.url, self.path))
+
+        if "/send" == self.url.path:
+            return self.do_Send()
+
+        if "/static" in self.url.path:
+            return self.do_Static()
+
+        if "/" in self.url.path:
+            return self.do_Static()
+
+        return self.pageNotFound(httpCode=404)
+
+        # print("path: %s" % url.path)
+        # print("query: %s" % params)
 
 if __name__ == "__main__":
     import argparse
