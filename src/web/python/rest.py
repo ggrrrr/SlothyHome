@@ -123,7 +123,7 @@ if __name__ == "__main__":
     # logging.basicConfig(level=logging.DEBUG)
 
     logging.basicConfig(
-        level=logging.INFO
+        level=logging.DEBUG
         # , format='%(relativeCreated)6d %(name)s %(threadId)s %(message)s'
         # , format='%(relativeCreated)6d %(threadName)s %(message)s'
         , format='%(asctime)s - %(threadName)s - %(name)s - %(levelname)s - %(message)s'
