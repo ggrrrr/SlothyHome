@@ -18,16 +18,16 @@ const String COMPILE_DATE = __DATE__ " " __TIME__;  //compile date that is used 
 
 //FIXME make it eeprom
 const int     BUTTON_COUNT = SHIFT_CHIPS * 8;
-const int     LED_COUNT = 8 * 3;
-const uint8_t ledPins[LED_COUNT] = 
+const int     SWITCH_COUNT = 8 * 3;
+const uint8_t switchPins[SWITCH_COUNT] = 
     {53,52,51,50,49,48,47,46
     ,45,44,43,42,41,40,39,38
     ,37,36,35,34,33,32,31,30
     };
 
-unsigned long ledGroupMap[LED_COUNT];
-int ledGroupState[LED_COUNT];
-uint8_t ledStates[LED_COUNT];
+unsigned long switchGroupMap[SWITCH_COUNT];
+int switchGroupState[SWITCH_COUNT];
+uint8_t switchStates[SWITCH_COUNT];
 
 int RESET_PIN = 7;
 
@@ -59,11 +59,11 @@ void sendCompileDate() {
   Serial.println(COMPILE_DATE);
 }
 
-void sendInfoLed(int idx) {
+void sendInfoSwitch(int idx) {
   Serial.print("led:");
   Serial.print(idx);
   Serial.print(":");
-  Serial.print(ledStates[idx]);
+  Serial.print(switchStates[idx]);
   Serial.println("");
 }
 
@@ -72,14 +72,14 @@ void sendInfoEEPROM() {
     Serial.print("eeprom:");
     Serial.print(i);
     Serial.print(":");
-    Serial.print(ledGroupMap[i], BIN);
+    Serial.print(switchGroupMap[i], BIN);
     Serial.println();
 //    Serial.print(":");
   }
 }
 
-void setLedGroupMap(int bIdx, uint32_t ledIdx) {
-  ledGroupMap[bIdx] = ledIdx;
+void setSwitchGroupMap(int bIdx, uint32_t ledIdx) {
+  switchGroupMap[bIdx] = ledIdx;
 }
 
 void eepromWriteGroupMap(int p_address, int gIdx, uint32_t ledMap) {
@@ -99,12 +99,12 @@ void eepromWriteGroupMap(int p_address, int gIdx, uint32_t ledMap) {
   EEPROM.write(add + 1, ledMap1);
   EEPROM.write(add + 2, ledMap2);
   EEPROM.write(add + 3, ledMap3);
-  setLedGroupMap(gIdx, ledMap);
+  setSwitchGroupMap(gIdx, ledMap);
 }
 
 void writeDefaultEEPROM(int p_address) {
   Serial.println("i:eeprom:defaut:");
-  for (int i = 0; i < LED_COUNT; i++) {
+  for (int i = 0; i < SWITCH_COUNT; i++) {
     uint32_t ledMap =  (uint32_t)1 << i;
     eepromWriteGroupMap(0, i, ledMap);
     p_address ++;
@@ -126,7 +126,7 @@ void readEEPROM(int p_address) {
     Serial.print(":");
     Serial.print(ledMap, BIN);
     Serial.println();
-    setLedGroupMap(i, ledMap);
+    setSwitchGroupMap(i, ledMap);
   }
 }
 
@@ -136,10 +136,10 @@ void heartBeatEvent() {
 }
 
 void gpioChangeState(int idx, int state) {
-  if ( idx >= 0 && idx < LED_COUNT) {
-    digitalWrite(ledPins[idx], state);
-    ledStates[idx] = state;
-    sendInfoLed(idx);
+  if ( idx >= 0 && idx < SWITCH_COUNT) {
+    digitalWrite(switchPins[idx], state);
+    switchStates[idx] = state;
+    sendInfoSwitch(idx);
   } else {
     Serial.print("ERR IDX:");
     Serial.println(idx);
@@ -154,16 +154,16 @@ void gpioStateLow(int idx) {
   gpioChangeState(idx, LOW);
 }
 
-void ledToggle(int idx) {
-  int ledState = ledStates[idx] ? LOW : HIGH;
-  gpioChangeState(idx, ledState);
+void gpioToggle(int idx) {
+  int switchState = switchStates[idx] ? LOW : HIGH;
+  gpioChangeState(idx, switchState);
 }
 
-void buttonFell(int idx) {
-//  int ledIdx = buttonMap[idx];
-  ledToggle(idx);
-  sendDone();
-}
+//void buttonFell(int idx) {
+////  int ledIdx = buttonMap[idx];
+//  ledToggle(idx);
+//  sendDone();
+//}
 
 int readline(int readch, char *buffer, int len) {
   static int pos = 0;
@@ -190,19 +190,19 @@ int readline(int readch, char *buffer, int len) {
 void readGpioState(String cmd) {
   byte idxB = cmd[2];
   if ( idxB == 0 ) {
-    for (int i = 0; i < LED_COUNT; i++) {
-      sendInfoLed(i);
+    for (int i = 0; i < SWITCH_COUNT; i++) {
+      sendInfoSwitch(i);
     }
     return;
   }
   int idx = idxB - '0';
-  sendInfoLed(idx);
+  sendInfoSwitch(idx);
 }
 
-void chageLedGroupMap(int mapIndex) {
-    uint32_t bm = ledGroupMap[mapIndex];
-    int toState = ! ledGroupState[mapIndex];
-    ledGroupState[mapIndex] = toState;
+void chageSwitchGroupMap(int mapIndex) {
+    uint32_t bm = switchGroupMap[mapIndex];
+    int toState = ! switchGroupState[mapIndex];
+    switchGroupState[mapIndex] = toState;
     for (int bits = 31; bits > -1; bits--) {
       if (bm & ((uint32_t )1 << bits)) {
         gpioChangeState(bits, toState);
@@ -219,17 +219,21 @@ void processGpioCommand(String cmd) {
   int idx = readCmdNumber(cmd.substring(3));
 
   switch (lCmd) {
-    case 'c':
-      ledToggle(idx);
+    case 't':
+    case 'T':
+      gpioToggle(idx);
       break;
     case 'h':
+    case 'H':
       gpioStateHigh(idx);
       break;
     case 'l':
+    case 'L':
       gpioStateLow(idx);
       break;
     case 'g':
-      chageLedGroupMap(idx);
+    case 'G':
+      chageSwitchGroupMap(idx);
       break;
     default:
       Serial.println("ERR L CMD");
@@ -285,7 +289,7 @@ void processWrite(String cmd) {
   }
 }
 
-// Process comand
+// Process serial comand
 void processCmd(char *command) {
   String cmd = command;
   Serial.println("cmd:" + cmd);
@@ -304,13 +308,14 @@ void processCmd(char *command) {
       writeDefaultEEPROM(0);
       break;
     default:
-      ledToggle(0);
+      gpioToggle(0);
       Serial.println("ERR C");
   }
   sendDone();
 }
 
-// -- SHIFT 
+// read all pins from shift register
+// pin count is number of shift register * 8
 uint32_t shift74165ReadData()
 {
   long bitVal;
@@ -345,6 +350,7 @@ uint32_t shift74165ReadData()
   return (bytesVal);
 }
 
+// init / setup the 74165 IO pins
 uint32_t initShift74165() {
 
   long bitVal;
@@ -361,6 +367,7 @@ uint32_t initShift74165() {
   return bytesVal;
 }
 
+// read new register data and calls changeSwitchGroupMap if needed.
 void shift74165ProcessData() {
   //  Serial.println("Shift");
   for (int i = 0; i < BUTTON_COUNT; i++) {
@@ -380,13 +387,18 @@ void shift74165ProcessData() {
       //    Serial.print("LOW");
     }
 
-    if ( newValue == HIGH && oldValue == LOW) {
-//      ledChange(i);
-      chageLedGroupMap(i);
+//    if ( newValue == HIGH && oldValue == LOW) {
+//      chageLedGroupMap(i);
+//    }
+    if ( newValue == LOW && oldValue == HIGH) {
+      chageSwitchGroupMap(i);
     }
   }
 }
 
+// function calls shift74165ReadData all shift register status
+// calls shift74165ProcessData if there is change
+// FIXME make the call with timer, like checkTimer / heartBeatEvent
 void loopShift74165() {
   pinValues = shift74165ReadData();
   if (pinValues != oldPinValues) {
@@ -400,6 +412,7 @@ void loopShift74165() {
 
 // -- SHIFT --
 
+// the staring init/setup 
 void setup() {
   Serial.begin(9600);
   //  //Serial.begin(19200);
@@ -434,12 +447,10 @@ void setup() {
 
 }
 
+// read current time and exec heardbeat event
 void checkTimer() {
   // here is where you'd put code that needs to be running all the time.
 
-  // check to see if it's time to blink the LED; that is, if the difference
-  // between the current time and last time you blinked the LED is bigger than
-  // the interval at which you want to blink the LED.
   unsigned long currentMillis = millis();
 
   if (currentMillis - previousMillis >= timerInterval) {
@@ -455,13 +466,11 @@ void checkTimer() {
 char buf[80];
 
 void loop() {
-  //  loopDebouncers();
+  // Read from shift register
   loopShift74165();
-  // send data only when you receive data:
+  // Check if we have some serial data available
   if (Serial.available() > 0) {
     if (readline(Serial.read(), buf, 80) > 0) {
-      //      Serial.print("CMD:");
-      //      Serial.println(buf);
       processCmd(buf);
     }
 
