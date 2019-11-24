@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Provides:          slothyHome-tty.py
+# Provides:          slothyHome-rs2tcp.py
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
@@ -15,11 +15,11 @@ import argparse
 import logging
 import socket
 import time
-import paho.mqtt.client as mqtt
 import signal
 
 from tty import SlothyTty
 from rest import SlothyHttp
+from mqtt import SlothyMqtt
 
 logging.basicConfig(level=logging.INFO)
 
@@ -85,7 +85,7 @@ def mqttInit(args):
     client = mqtt.Client()
     client.on_connect = on_connect
     client.on_message = on_message
-    
+
     client.connect(args.mqttHost, 1883, 60)
     # client.subscribe(args.mqttTopic)
     client.subscribe("cmd")

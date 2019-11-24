@@ -15,7 +15,6 @@ class SlothyTty():
         self.timeSleepWriteLoop = 0.1
         self.callBack = None
         self.connect()
-        self.serial = None
         self.blockEnd = "."
         self.blockStart = "cmd"
         self.blockWait = 0
