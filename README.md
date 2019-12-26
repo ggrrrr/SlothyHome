@@ -102,7 +102,7 @@ In general the idea is to split the system in to two main sub systems.
       * `HTTP REST | MQTT`
       * _HomeAutomation or Domoticz or other..._
 
-* _HomeAutomation or Domoticz_ command for lights command
+* _HomeAssistant or Domoticz_ command for lights command
   * `HTTP REST | MQTT`
   * `ttyApi.py` _SlothyHome service_
   * _Serial CLI_ **control command** 
@@ -163,4 +163,36 @@ In general the idea is to split the system in to two main sub systems.
     * `11111111` (bit map) the actual bit map of the LED INDEX ( 0, 1, 2, 3, 4 , 5, 6, 7)
 * `I` - Init EEPROM
 
+## Other hardware
+* DS2406 - 1-Wire GPIO PIO-A (IN)) ( door sensor)
+* DS2413 - 1-Wire GPIO PIO-A (OUT) PIO-B (IN) (door sensor and LED)
+* DS18B20 - 1-Wire Temp sensor
 
+## Home Assistant examples and tools
+* HASS Docs
+  * https://www.home-assistant.io/docs/
+* icons:
+  * https://cdn.materialdesignicons.com/4.7.95/
+* exmaple configuration.yaml: 
+```YAML
+...
+mqtt:
+  broker: 192.168.4.1
+
+switch: !include switch.yaml
+...
+```
+* exmaple configuration.yaml: 
+```YAML
+  - platform: mqtt
+    name: "switch 0"
+    state_topic: "switch/0/status"
+    command_topic: "switch/0/set"
+    payload_on: "on"
+    payload_off: "off"
+    state_on: "on"
+    state_off: "off"
+    optimistic: false
+    qos: 0
+    retain: true
+```
