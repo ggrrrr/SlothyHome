@@ -154,7 +154,7 @@ In general the idea is to split the system in to two main sub systems.
 * `rl` - Read Light **status update** *FIXME proper name*
 * `wl...` - Write Light **control command** *FIXME proper name*
   * `wlcNN` - Write Light Change
-  * `wlgNN` - Write Light Group 
+  * `wlgNN` - Write Light Group
 * `we...` - Write Eeprom
   * example `we00b11111111` - 
     * `we` (Write Eprom)
@@ -164,8 +164,8 @@ In general the idea is to split the system in to two main sub systems.
 * `I` - Init EEPROM
 
 ## Other hardware
-* DS2406 - 1-Wire GPIO PIO-A (IN)) ( door sensor)
-* DS2413 - 1-Wire GPIO PIO-A (OUT) PIO-B (IN) (door sensor and LED)
+* DS2406 - 1-Wire GPIO PIO-A, (In) (door sensor)
+* DS2413 - 1-Wire GPIO PIO-A, PIO-B (In,Out) (door sensor and LED)
 * DS18B20 - 1-Wire Temp sensor
 
 ## Home Assistant examples and tools
