@@ -51,12 +51,13 @@ def parseTtyCallBack(mqtt, lines):
             status = bytes(remapStatusToHa(statStr), 'utf-8')
             logging.info("parseTtyCallBack:light: %s, status: %s" % ( lightId, status ))
             if mqtt is not None:
-                mqtt.publish("light/%s/status" % lightId, status)
+                logging.info("mqtt:%s" % lightId)
+                mqtt.publish("switch/%s/status" % lightId, status)
 
         # if line == "led":
         #     mqtt.publish("light/1/status","OFF")
-        # if line == "led:0:1":
-        #     mqtt.publish("light/1/status","ON")
+        if mqtt is not None:
+            mqtt.publish("tty", line)
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -75,10 +76,12 @@ def on_message(client, userdata, msg):
         tty.sendData("%s" % msg.payload.decode("utf-8") )
         return
 
-    ll, lightId, lightCmd = msg.topic.split("/")
-    if "switch" == lightCmd:
+    mqttGroup, lightId, mqttCmd = msg.topic.split("/")
+    logging.info("mqtt: group: %s, light:%s cmd:%s" % ( mqttGroup, lightId, mqttCmd) )
+    if "switch" in mqttGroup and "set" in mqttCmd:
+        logging.info("send AAAAAA")
         ledCmd = remapStatusFromHa(msg.payload.decode("utf-8") )
-        tty.sendData("wlc%s" % lightId )
+        tty.sendData("wlg%s" % lightId )
         return
 
 def mqttInit(args):
@@ -89,7 +92,8 @@ def mqttInit(args):
     client.connect(args.mqttHost, 1883, 60)
     # client.subscribe(args.mqttTopic)
     client.subscribe("cmd")
-    client.subscribe("light/#")
+    client.subscribe("switch/#")
+    logging.info("mqttInit." % ())
     return client
 
 _LOG_LEVEL_STRINGS = ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG']
