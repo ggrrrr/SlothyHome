@@ -1,3 +1,26 @@
+# install image
+# https://desertbot.io/blog/headless-raspberry-pi-3-bplus-ssh-wifi-setup/
+# Copy img to SD card
+`sudo dd bs=1m if=2019-09-26-raspbian-buster-lite.img of=/dev/disk2`
+
+# Enable ssh by default
+```sh
+touch /Volumes/boot/ssh
+```
+
+```sh
+cat > /Volumes/boot/wpa_supplicant.conf
+country=US
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+
+network={
+    ssid="NETWORK-NAME"
+    psk="NETWORK-PASSWORD"
+}
+```
+
+
 # http://www.deanmao.com/2012/08/10/uploading-sketches-to-the-arduino-on-the-pi/
 
 ## WiFi router
