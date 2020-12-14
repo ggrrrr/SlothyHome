@@ -23,6 +23,8 @@ from rest import SlothyHttp
 
 logging.basicConfig(level=logging.INFO)
 
+domoticz = None
+
 def remapStatusFromHa(s):
     if "ON" == s:
         return "h"
@@ -33,6 +35,11 @@ def remapStatusFromHa(s):
     if "1" == s:
         return "h"
     return "l"
+
+def remapStatusTo(s):
+    if int(s) == 1:
+        return "On"
+    return "Off"
 
 def remapStatusToHa(s):
     if int(s) == 1:
@@ -49,11 +56,14 @@ def parseTtyCallBack(mqtt, lines):
             ledStr, idxStr, statStr = line.split(":")
             lightId = idxStr
             status = bytes(remapStatusToHa(statStr), 'utf-8')
+            statusD = remapStatusTo(statStr)
             logging.info("parseTtyCallBack:light: %s, status: %s" % ( lightId, status ))
             if mqtt is not None:
                 logging.info("mqtt:%s" % lightId)
                 mqtt.publish("switch/%s/status" % lightId, status)
-
+            #if domoticz:
+            #    domoticz = """{"command": "udevice", "idx": %s, "nvalue": %s }""" % (lightId, statStr)
+            #    mqtt.publish("domoticz/in" , domoticz)
         # if line == "led":
         #     mqtt.publish("light/1/status","OFF")
         if mqtt is not None:
@@ -70,7 +80,7 @@ def on_connect(client, userdata, flags, rc):
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-    logging.info("on_message:client:%s, userdata:%s, topic:%s, message:%s" %(  client, userdata, msg.topic, msg.payload ))
+    logging.debug("on_message:client:%s, userdata:%s, topic:%s, message:%s" %(  client, userdata, msg.topic, msg.payload ))
     # print(msg.topic+" "+str(msg.payload))
     if "cmd" == msg.topic:
         tty.sendData("%s" % msg.payload.decode("utf-8") )
@@ -79,7 +89,6 @@ def on_message(client, userdata, msg):
     mqttGroup, lightId, mqttCmd = msg.topic.split("/")
     logging.info("mqtt: group: %s, light:%s cmd:%s" % ( mqttGroup, lightId, mqttCmd) )
     if "switch" in mqttGroup and "set" in mqttCmd:
-        logging.info("send AAAAAA")
         ledCmd = remapStatusFromHa(msg.payload.decode("utf-8") )
         tty.sendData("wlg%s" % lightId )
         return
