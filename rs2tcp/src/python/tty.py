@@ -28,7 +28,6 @@ class SlothyTty():
             out.append({'device': port.device, 'name': port.name, 'description': port.description, 'sn': port.serial_number})
         return out
 
-
     def connect(self):
         try:
             self.serial = serial.Serial(
@@ -96,7 +95,6 @@ class SlothyTty():
 
         if len(readLines) > 0:
             self.LOG.info("readData.readLines:%s" % ( readLines))
-
 
         self.ttyFree = 1
         if len(readLines) > 0:

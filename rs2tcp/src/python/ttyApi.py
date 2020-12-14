@@ -34,6 +34,8 @@ def remapStatusFromHa(s):
         return "h"
     if "1" == s:
         return "h"
+    if 1 == s:
+        return "h"
     return "l"
 
 def remapStatusTo(s):
