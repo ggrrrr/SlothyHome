@@ -19,7 +19,7 @@ if __name__ == "__main__":
     for s in sensors:
         yml = yaml_helper.yamlHelper.read(f"{s.id}.yaml")
         yaml_helper.applyYaml(s, yml)
-        # hass.pushTempConfig(s)
-        hass.pushState(s)
+        hass.pushTempConfig(s)
+        # hass.pushState(s)
         # print(s)
         # pass
