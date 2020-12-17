@@ -1,12 +1,65 @@
+import glob
 import logging
-from pi1wire import Pi1Wire
+
+# from pi1wire import Pi1Wire
 
 import sensor 
 
 # logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('pi1wire')
 
+
+def read_rom(device_file):
+    name_file=device_file+'/name'
+    with open(name_file,'r') as f:
+        return f.readline().strip()
+    return ""
+
+def read_temp_raw(device_file):
+    with open(f"{device_file}/w1_slave", 'r') as f:
+        lines = f.readlines()
+    # f.close()
+        return lines
+ 
+def read_temp(device_file):
+    lines = read_temp_raw(device_file)
+    a = len(lines)
+    if a == 0:
+        return None, f"{device_file}/w1_slave empy"
+    while lines[0].strip()[-3:] != 'YES':
+        time.sleep(0.2)
+        lines = read_temp_raw(device_file)
+    # return None, "CRC dont match"
+    # Find the index of 't=' in a string.
+    equals_pos = lines[1].find('t=')
+    if equals_pos != -1:
+        # Read the temperature .
+        temp_string = lines[1][equals_pos+2:]
+        temp_c = float(temp_string) / 1000.0
+        # temp_f = temp_c * 9.0 / 5.0 + 32.0
+        return temp_c, None
+    return None, "unknown error"
+
 def readAll():
+    out = []
+    base_dir = '/sys/bus/w1/devices/'
+    # Get all the filenames begin with 28 in the path base_dir.
+    device_folder = glob.glob(base_dir + '28*')
+    for f in device_folder:
+        rom = read_rom(f)
+        temp_c, err = read_temp(f)
+        # print(f' {f} rom: {rom}')
+        if err is None:
+            t = sensor.TempSensor(rom, temp_c)
+            logger.debug(f"read: file: {t}")
+            out.append(t)
+        else:
+            logger.error(f"error: {f} {err}")
+
+        # time.sleep(1)
+    return out
+
+def readAll1():
     out = []
     for s in Pi1Wire().find_all_sensors():
         logger.debug("read: %s" % s)
