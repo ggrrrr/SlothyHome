@@ -1,6 +1,6 @@
 import glob
 import logging
-
+import time
 # from pi1wire import Pi1Wire
 
 import sensor 
@@ -18,11 +18,13 @@ def read_rom(device_file):
 def read_temp_raw(device_file):
     with open(f"{device_file}/w1_slave", 'r') as f:
         lines = f.readlines()
-    # f.close()
         return lines
- 
+    return []
+
 def read_temp(device_file):
+    startTime = time.time()
     lines = read_temp_raw(device_file)
+    elapsedTime = time.time() - startTime
     a = len(lines)
     if a == 0:
         return None, f"{device_file}/w1_slave empy"
@@ -37,6 +39,7 @@ def read_temp(device_file):
         temp_string = lines[1][equals_pos+2:]
         temp_c = float(temp_string) / 1000.0
         # temp_f = temp_c * 9.0 / 5.0 + 32.0
+        logger.info(f"read_temp: {device_file} {temp_c} ts: {elapsedTime:0.2}")
         return temp_c, None
     return None, "unknown error"
 
@@ -51,7 +54,7 @@ def readAll():
         # print(f' {f} rom: {rom}')
         if err is None:
             t = sensor.TempSensor(rom, temp_c)
-            logger.debug(f"read: file: {t}")
+            logger.debug(f"read: file: {rom} {t}")
             out.append(t)
         else:
             logger.error(f"error: {f} {err}")
@@ -75,7 +78,7 @@ def readSensor(mac: str):
 if __name__ == "__main__":
     FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     logging.basicConfig(level=logging.DEBUG, format=FORMAT)
-    # logging.basicConfig(format=FORMAT)
 
-    s = readAll()
-    print([str(x) for x in s])
+    ss = readAll()
+    for s in ss:
+        print(s)

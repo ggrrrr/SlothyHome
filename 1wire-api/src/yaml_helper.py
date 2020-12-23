@@ -29,6 +29,7 @@ class YamlHelper:
 
     def __init__(self, dir):
         self.dir = "%s/" % dir.rstrip("/")
+        logger.info(f"init: dir: {self.dir}")
 
     def read(self, filename):
         # pass

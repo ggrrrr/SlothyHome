@@ -1,8 +1,9 @@
 import sensor
-# import yaml_helper
+import yaml_helper
 import mqtt_helper
 import logging
 import hashlib 
+import pi1wire_helper
 
 logger = logging.getLogger('hass-helper')
 
@@ -12,8 +13,9 @@ def md5(val):
 
 class HassHelper:
 
-    def __init__(self, topicProfix: str = "homeassistant"):
+    def __init__(self, topicProfix: str = "homeassistant", decimalPlaces: int = 2):
         self._topicPrefix = topicProfix.strip().strip("/")
+        self.decimalPlaces = decimalPlaces
 
     def _stateTopic(self, sensor: sensor.RowSensor):
         """
@@ -58,10 +60,20 @@ class HassHelper:
         data = {
         }
         if sensor.value("temp") is not None:
-            data['temp'] = sensor.value("temp")
+            data['temp'] = round(sensor.value("temp"), self.decimalPlaces)
         
         mqtt_helper.client.publish(stateTopic, data)
 
+    def hendlerHass(self, msg):
+        logger.info("hendlerHass:topic:%s, message:%s" 
+            % (msg.topic, msg.payload))
+        if msg.payload == b'online':
+            sensors = pi1wire_helper.readAll()
+            for s in sensors:
+                yml = yaml_helper.yamlHelper.read(f"{s.id}.yaml")
+                yaml_helper.applyYaml(s, yml)
+                self.pushTempConfig(s)
+        
 
 if __name__ == "__main__":
     FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'

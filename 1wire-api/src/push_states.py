@@ -13,7 +13,7 @@ if __name__ == "__main__":
     mqtt_helper.config("hass-host")
     yaml_helper.config()
 
-    hass = hass_helper.HassHelper(topicProfix = "hass_auto")
+    hass = hass_helper.HassHelper(topicProfix = "hass_auto", decimalPlaces = 1)
 
     sensors = pi1wire_helper.readAll()
     for s in sensors:
