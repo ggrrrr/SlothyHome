@@ -6,7 +6,7 @@ import time
 import sensor 
 
 # logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger('pi1wire')
+logger = logging.getLogger('pi1wire_helper')
 
 
 def read_rom(device_file):

@@ -62,6 +62,13 @@ class RowSensor:
     def name(self):
         return self._name
 
+    @property
+    def values(self):
+        out = {}
+        for v in self._values:
+            out.update( { v.name: v.value} )
+        return out
+
     @name.setter
     def name(self, value):
         self._name = value

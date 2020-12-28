@@ -5,7 +5,7 @@ import logging
 import hashlib 
 import pi1wire_helper
 
-logger = logging.getLogger('hass-helper')
+logger = logging.getLogger('hass_helper')
 
 def md5(val):
     out = hashlib.md5(val.encode())
