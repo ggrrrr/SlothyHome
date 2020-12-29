@@ -3,7 +3,7 @@ import logging
 import sensor
 
 
-logger = logging.getLogger('yaml-helper')
+logger = logging.getLogger('yaml_helper')
 
 yamlHelper = None
 
@@ -23,7 +23,7 @@ def applyYaml(sensor: sensor.RowSensor , yamlConfig: dict):
                     name = v['name']
                     offset = v['offset']
                     sensor.offsetValue(name, offset)
-    logger.info(f"applyYaml.sensor[{sensor.id}]:  updated: {sensor}")
+    logger.debug(f"applyYaml.sensor[{sensor.id}]:  updated: {sensor}")
 
 class YamlHelper:
 
@@ -34,7 +34,7 @@ class YamlHelper:
     def read(self, filename):
         # pass
         f = f"{self.dir}{filename}"
-        logger.info(f"open: {f}")
+        logger.debug(f"open: {f}")
         try:
             with open(f, "r") as file:
                 try:

@@ -64,16 +64,6 @@ class HassHelper:
         
         mqtt_helper.client.publish(stateTopic, data)
 
-    def hendlerHass(self, msg):
-        logger.info("hendlerHass:topic:%s, message:%s" 
-            % (msg.topic, msg.payload))
-        if msg.payload == b'online':
-            sensors = pi1wire_helper.readAll()
-            for s in sensors:
-                yml = yaml_helper.yamlHelper.read(f"{s.id}.yaml")
-                yaml_helper.applyYaml(s, yml)
-                self.pushTempConfig(s)
-        
 
 if __name__ == "__main__":
     FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'

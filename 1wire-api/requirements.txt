@@ -1,0 +1,4 @@
+paho-mqtt==1.5.0
+PyYAML==5.1.2
+influxdb==5.3.1
+

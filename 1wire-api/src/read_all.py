@@ -18,4 +18,5 @@ if __name__ == "__main__":
     for s in sensors:
         yml = yaml_helper.yamlHelper.read(f"{s.id}.yaml")
         yaml_helper.applyYaml(s, yml)
-        #print(s)
+        logger.info(f"sensor: {s}")
+    

@@ -17,7 +17,8 @@ def config(host: str, port: int = 8086, database: str = "sensors"):
     client.switch_database(database)
     logger.info(f"connected:{host}:{port}:{database}")
 
-def saveSensors(measurement: str, ts, data):
+def saveSensors(measurement: str, data):
+    ts = time.ctime()
     global client
     if client is None:
         raise Exception("not connected")
