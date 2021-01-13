@@ -1,7 +1,8 @@
 #include <EEPROM.h> //Needed to access the eeprom read write functions
 
 // SHIFT REGISTER 74HC165
-#define SHIFT_CHIPS 2
+
+#define SHIFT_CHIPS 1
 #define SHIFT_PULSE_WIDTH_USEC   5
 #define SHIFT_POLL_DELAY_MSEC   1
 
@@ -19,7 +20,7 @@ const String COMPILE_DATE = __DATE__ " " __TIME__;  //compile date that is used 
 //FIXME make it eeprom
 const int     BUTTON_COUNT = SHIFT_CHIPS * 8;
 const int     SWITCH_COUNT = 8 * 3;
-const uint8_t switchPins[SWITCH_COUNT] = 
+const uint8_t switchPins[SWITCH_COU NT] = 
     {53,52,51,50,49,48,47,46
     ,45,44,43,42,41,40,39,38
     ,37,36,35,34,33,32,31,30
@@ -133,6 +134,15 @@ void readEEPROM(int p_address) {
 void heartBeatEvent() {
   heartBeatRequest();
   sendDone();
+}
+
+void gpioSetPinMode(int idx) {
+  if ( idx >= 0 && idx < SWITCH_COUNT) {
+    pinMode(switchPins[idx], OUTPUT);
+  } else {
+    Serial.print("ERR IDX:");
+    Serial.println(idx);
+  }
 }
 
 void gpioChangeState(int idx, int state) {
@@ -414,17 +424,16 @@ void loopShift74165() {
 
 // the staring init/setup 
 void setup() {
-  Serial.begin(9600);
-  //  //Serial.begin(19200);
-  //  for (int i = 0; i < BUTTON_COUNT; i++) {
-  //    buttons[i].attach(buttonPins[i], INPUT);
-  //    buttons[i].interval(DEBOUNCE_DELAY);
-  //    pinMode(ledPins[i], OUTPUT);
-  //    ledDown(i);
-  //  }
+  Serial.begin(38400);
+  Serial.println("START");
+  Serial.print("SWITCH_COUNT:");
+  Serial.println(SWITCH_COUNT); 
 
   /* Initialize our digital pins...
   */
+  for (int i = 0; i < SWITCH_COUNT; i++) {
+    gpioSetPinMode(i);
+  }
   pinMode(SHIFT_PLOAD_P, OUTPUT);
   pinMode(SHIFT_CE_P, OUTPUT);
   pinMode(SHIFT_CLOCK_P, OUTPUT);
@@ -434,10 +443,9 @@ void setup() {
   digitalWrite(SHIFT_PLOAD_P, HIGH);
 
   pinValues = initShift74165();
-
+  
   oldPinValues = pinValues;
   pinValues = shift74165ReadData();
-//  display_pin_values();
 
   readEEPROM(0);
 
@@ -445,20 +453,22 @@ void setup() {
 
   sendDone();
 
+//  gpioChangeState(0,1);
+//  gpioChangeState(1,1);
+//  gpioChangeState(2,1);
+//  gpioChangeState(3,1);
+//  gpioChangeState(4,1);
+//  gpioChangeState(12,1);
 }
 
 // read current time and exec heardbeat event
 void checkTimer() {
   // here is where you'd put code that needs to be running all the time.
-
   unsigned long currentMillis = millis();
-
   if (currentMillis - previousMillis >= timerInterval) {
     // save the last time you blinked the LED
     previousMillis = currentMillis;
-
     heartBeatEvent();
-
   }
 }
 
@@ -473,9 +483,6 @@ void loop() {
     if (readline(Serial.read(), buf, 80) > 0) {
       processCmd(buf);
     }
-
   }
-
   checkTimer();
-
 }
