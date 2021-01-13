@@ -6,7 +6,7 @@ docker run -d --name sensors --privileged \
     -v /home/pi/sensors:/data \
     --net=host \
     -e YAML_DIR=/data \
-    -e MQTT_HOST=mqtt-host \
+    -e MQTT_HOST=localhost \
     slottyhome/sensors:latest \
     python main.py
 

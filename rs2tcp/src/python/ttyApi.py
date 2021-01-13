@@ -82,18 +82,21 @@ def on_connect(client, userdata, flags, rc):
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-    logging.debug("on_message:client:%s, userdata:%s, topic:%s, message:%s" %(  client, userdata, msg.topic, msg.payload ))
+    logging.info("on_message:client:%s, userdata:%s, topic:%s, message:%s" %(  client, userdata, msg.topic, msg.payload ))
     # print(msg.topic+" "+str(msg.payload))
     if "cmd" == msg.topic:
         tty.sendData("%s" % msg.payload.decode("utf-8") )
         return
 
     mqttGroup, lightId, mqttCmd = msg.topic.split("/")
-    logging.info("mqtt: group: %s, light:%s cmd:%s" % ( mqttGroup, lightId, mqttCmd) )
     if "switch" in mqttGroup and "set" in mqttCmd:
-        ledCmd = remapStatusFromHa(msg.payload.decode("utf-8") )
-        tty.sendData("wlg%s" % lightId )
-        return
+        if mqttCmd == "set":
+          switchStatus = remapStatusFromHa(msg.payload.decode("utf-8") )
+          ttyCmd = "wl%s%s" % (switchStatus, lightId)
+          logging.info("mqtt: group: %s, light:%s cmd:%s status:%s -> tty:%s" % ( mqttGroup, lightId, mqttCmd, switchStatus, ttyCmd) )
+
+          tty.sendData(ttyCmd )
+          return
 
 def mqttInit(args):
     client = mqtt.Client()

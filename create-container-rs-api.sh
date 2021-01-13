@@ -6,6 +6,7 @@ docker run -d --name rs-api --privileged \
     --net=host slottyihome/rs-api:latest \
     python src/python/ttyApi.py \
         --ttyDev /dev/ttyACM0 \
+	--ttyRate 38400 \
         --httpPort 8080 \
         --mqttHost "mqtt-host" \
         --mqttPort 1883 \
